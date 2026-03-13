@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SurakshaNet</title>
+    <style>
+        body { width: 300px; padding: 10px; font-family: sans-serif; }
+        .header { font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .status { margin-bottom: 10px; }
+        .status.active { color: green; }
+        .log { border-top: 1px solid #ccc; padding-top: 10px; max-height: 200px; overflow-y: auto; }
+        .log-item { font-size: 12px; border-bottom: 1px solid #eee; padding: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="header">SurakshaNet Shield</div>
+    <div class="status active">● Protection Active</div>
+    <div class="log" id="log-container">
+        <!-- Logs will appear here -->
+        <div class="log-item">System Ready.</div>
+    </div>
+    <script src="popup.js" type="module"></script>
+</body>
+</html>
