@@ -129,6 +129,51 @@ def train_and_export_model():
         first_split = list(dataset_dict.keys())[0]
         dataset_dict["train"] = dataset_dict[first_split]
 
+    # --- Add prestigious academic datasets for English and Hinglish ---
+    from datasets import load_dataset, concatenate_datasets
+    print("☁️ [Modal GPU] Augmenting Hindi dataset with academic English & Hinglish datasets...")
+    
+    extra_train = []
+    
+    # 1. Davidson et al. 2017 (English Hate Speech)
+    try:
+        print("☁️ [Modal GPU] Downloading Davidson English dataset (hate_speech_offensive)...")
+        en_ds = load_dataset("hate_speech_offensive", split="train")
+        en_df = en_ds.to_pandas()
+        # Labels: 0=hate speech, 1=offensive language, 2=neither
+        # MACD format: 0=abusive, 1=non-abusive
+        en_df["label"] = en_df["class"].apply(lambda x: 0 if x in [0, 1] else 1)
+        en_df = en_df.rename(columns={"tweet": "text"})[["text", "label"]]
+        # Ensure text is string and label is int
+        en_df["text"] = en_df["text"].astype(str)
+        en_df["label"] = en_df["label"].astype(int)
+        extra_train.append(Dataset.from_pandas(en_df))
+    except Exception as e:
+        print(f"❌ Failed to load Davidson dataset: {e}")
+
+    # 2. L3Cube-Pune (Hinglish Hate Speech)
+    try:
+        print("☁️ [Modal GPU] Downloading L3Cube-Pune Hinglish dataset (l3cube-pune/hinglish-hate)...")
+        hi_ds = load_dataset("l3cube-pune/hinglish-hate", split="train")
+        hi_df = hi_ds.to_pandas()
+        # Labels in l3cube: 0=Non-Hate, 1=Hate
+        # MACD format: 0=abusive, 1=non-abusive
+        if "label" in hi_df.columns:
+            hi_df["label"] = hi_df["label"].apply(lambda x: 1 if x == 0 else 0)
+        hi_df = hi_df.rename(columns={"tweet": "text"})[["text", "label"]]
+        hi_df["text"] = hi_df["text"].astype(str)
+        hi_df["label"] = hi_df["label"].astype(int)
+        extra_train.append(Dataset.from_pandas(hi_df))
+    except Exception as e:
+        print(f"❌ Failed to load L3Cube dataset: {e}")
+
+    if "train" in dataset_dict and extra_train:
+        print("☁️ [Modal GPU] Merging Hindi, English, and Hinglish training sets!")
+        combined = concatenate_datasets([dataset_dict["train"]] + extra_train)
+        dataset_dict["train"] = combined.shuffle(seed=42)
+        print(f"☁️ [Modal GPU] New combined train set size: {len(dataset_dict['train'])}")
+    # ----------------------------------------------------------------
+
     dataset = DatasetDict(dataset_dict)
 
     def preprocess_function(examples):
