@@ -129,8 +129,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }
 
             try {
+                // ── BENCHMARKING: inference latency ──────────────────────────
+                console.time('inference');
+                const _t0 = performance.now();
                 // Run toxicity classification
                 const results = await classifier(request.text);
+                const _inferenceMs = performance.now() - _t0;
+                console.timeEnd('inference');
+                console.log(`⏱️ SurakshaNet inference latency: ${_inferenceMs.toFixed(2)} ms`);
 
                 // Analyze results
                 const analysis = analyzeToxicity(results);

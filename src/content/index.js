@@ -53,12 +53,31 @@ function scanPage() {
         
         console.log(`🔍 SurakshaNet Queuing: "${text.substring(0, 40)}"`);
 
+        // ── Guard: extension context may be invalidated after a reload ───
+        if (!chrome?.runtime?.sendMessage) {
+            console.warn('⚠️ SurakshaNet: Extension context invalidated — please refresh the page.');
+            delete msg.dataset.surakshaScanned;
+            scannedTexts.delete(text);
+            return;
+        }
+
+        // ── BENCHMARKING: round-trip latency (content-script side) ──────
+        const _rtStart = performance.now();
         chrome.runtime.sendMessage(
             { type: 'ANALYZE_TEXT', text, source: window.location.hostname },
             (response) => {
+                const _rtMs = performance.now() - _rtStart;
+                console.log(`⏱️ SurakshaNet round-trip latency: ${_rtMs.toFixed(2)} ms`);
+
+                // Guard again inside callback — runtime can become undefined between calls
+                if (!chrome?.runtime) {
+                    delete msg.dataset.surakshaScanned;
+                    scannedTexts.delete(text);
+                    return;
+                }
+
                 if (chrome.runtime.lastError) {
                     console.warn('⚠️ SurakshaNet SW not ready:', chrome.runtime.lastError.message);
-                    // Allow retry on error by removing from cache and DOM
                     delete msg.dataset.surakshaScanned;
                     scannedTexts.delete(text);
                     return;

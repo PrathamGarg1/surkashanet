@@ -102,54 +102,37 @@ def train_and_evaluate():
         first_split = list(dataset_dict.keys())[0]
         dataset_dict["train"] = dataset_dict[first_split]
 
-    # --- Add prestigious academic datasets for English and Hinglish ---
+    # --- Add Davidson et al. 2017 English Hate Speech dataset ---
+    # NOTE: L3Cube is intentionally excluded from all splits.
     from datasets import load_dataset, concatenate_datasets
-    print("☁️ [Modal GPU] Augmenting Hindi dataset with academic English & Hinglish datasets...")
-    
+    print("☁️ [Modal GPU] Augmenting Hindi dataset with Davidson et al. 2017 English dataset...")
+
     extra_train = []
     extra_test = []
-    
-    # 1. Davidson et al. 2017 (English Hate Speech)
+
+    # Davidson et al. 2017 (English Hate Speech)
     try:
-        en_ds = load_dataset("hate_speech_offensive")
-        # Train split
-        en_df_train = en_ds['train'].to_pandas()
-        en_df_train["label"] = en_df_train["class"].apply(lambda x: 0 if x in [0, 1] else 1)
-        en_df_train = en_df_train.rename(columns={"tweet": "text"})[["text", "label"]]
-        en_df_train["text"] = en_df_train["text"].astype(str)
-        en_df_train["label"] = en_df_train["label"].astype(int)
-        
-        # Split English train into 90% train, 10% test
-        split_idx = int(0.9 * len(en_df_train))
-        extra_train.append(Dataset.from_pandas(en_df_train.iloc[:split_idx]))
+        en_ds = load_dataset("hate_speech_offensive", split="train")
+        en_df_all = en_ds.to_pandas()
+        en_df_all["label"] = en_df_all["class"].apply(lambda x: 0 if x in [0, 1] else 1)
+        en_df_all = en_df_all.rename(columns={"tweet": "text"})[["text", "label"]]
+        en_df_all["text"] = en_df_all["text"].astype(str)
+        en_df_all["label"] = en_df_all["label"].astype(int)
+        en_df_all = en_df_all.sample(frac=1, random_state=42).reset_index(drop=True)
+
+        # Split English into 90% train, 10% test
+        split_idx = int(0.9 * len(en_df_all))
+        extra_train.append(Dataset.from_pandas(en_df_all.iloc[:split_idx]))
         if "test" in dataset_dict:
-            extra_test.append(Dataset.from_pandas(en_df_train.iloc[split_idx:]))
-            
+            extra_test.append(Dataset.from_pandas(en_df_all.iloc[split_idx:]))
+
     except Exception as e:
         print(f"❌ Failed to load Davidson dataset: {e}")
-
-    # 2. L3Cube-Pune (Hinglish Hate Speech)
-    try:
-        hi_ds = load_dataset("l3cube-pune/hinglish-hate", split="train")
-        hi_df = hi_ds.to_pandas()
-        if "label" in hi_df.columns:
-            hi_df["label"] = hi_df["label"].apply(lambda x: 1 if x == 0 else 0)
-        hi_df = hi_df.rename(columns={"tweet": "text"})[["text", "label"]]
-        hi_df["text"] = hi_df["text"].astype(str)
-        hi_df["label"] = hi_df["label"].astype(int)
-        
-        split_hi_idx = int(0.9 * len(hi_df))
-        extra_train.append(Dataset.from_pandas(hi_df.iloc[:split_hi_idx]))
-        if "test" in dataset_dict:
-            extra_test.append(Dataset.from_pandas(hi_df.iloc[split_hi_idx:]))
-            
-    except Exception as e:
-        print(f"❌ Failed to load L3Cube dataset: {e}")
 
     if "train" in dataset_dict and extra_train:
         combined = concatenate_datasets([dataset_dict["train"]] + extra_train)
         dataset_dict["train"] = combined.shuffle(seed=42)
-        
+
     if "test" in dataset_dict and extra_test:
         combined_test = concatenate_datasets([dataset_dict["test"]] + extra_test)
         dataset_dict["test"] = combined_test.shuffle(seed=42)
