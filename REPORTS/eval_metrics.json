@@ -1,0 +1,194 @@
+{
+  "leakage_report": {
+    "test_a_macd_hindi": {
+      "n": 6728,
+      "leakage_rows": 0,
+      "sha256_prefix": "5b92920ad1df6d1b"
+    },
+    "test_b_davidson_10pct": {
+      "n": 2478,
+      "leakage_rows": 0,
+      "sha256_prefix": "bba5b8aa21fef89c"
+    },
+    "test_c_combined": {
+      "n": 9206,
+      "leakage_rows": 0,
+      "sha256_prefix": "9d59795fd1b950cd"
+    }
+  },
+  "sizes_mb": {
+    "pytorch_fp32": 448.839,
+    "onnx_fp32": 449.071,
+    "onnx_int8": 112.846
+  },
+  "metrics_grid": {
+    "pytorch_fp32": {
+      "test_a_macd_hindi": {
+        "n": 6728,
+        "accuracy": 0.8466111771700356,
+        "f1_macro": 0.8466111229522364,
+        "precision_macro": 0.847973092582758,
+        "recall_macro": 0.8479400786188458,
+        "confusion_matrix": [
+          [
+            2846,
+            650
+          ],
+          [
+            382,
+            2850
+          ]
+        ]
+      },
+      "test_b_davidson_10pct": {
+        "n": 2478,
+        "accuracy": 0.9648910411622276,
+        "f1_macro": 0.9386291957824475,
+        "precision_macro": 0.9311643835616439,
+        "recall_macro": 0.9465568822365515,
+        "confusion_matrix": [
+          [
+            2006,
+            53
+          ],
+          [
+            34,
+            385
+          ]
+        ]
+      },
+      "test_c_combined": {
+        "n": 9206,
+        "accuracy": 0.878448837714534,
+        "f1_macro": 0.8745794081595192,
+        "precision_macro": 0.8712578181247452,
+        "recall_macro": 0.8797529794064041,
+        "confusion_matrix": [
+          [
+            4852,
+            703
+          ],
+          [
+            416,
+            3235
+          ]
+        ]
+      },
+      "latency_ms_per_sample_test_a": 35.554
+    },
+    "onnx_fp32": {
+      "test_a_macd_hindi": {
+        "n": 6728,
+        "accuracy": 0.8466111771700356,
+        "f1_macro": 0.8466111229522364,
+        "precision_macro": 0.847973092582758,
+        "recall_macro": 0.8479400786188458,
+        "confusion_matrix": [
+          [
+            2846,
+            650
+          ],
+          [
+            382,
+            2850
+          ]
+        ]
+      },
+      "test_b_davidson_10pct": {
+        "n": 2478,
+        "accuracy": 0.9648910411622276,
+        "f1_macro": 0.9386291957824475,
+        "precision_macro": 0.9311643835616439,
+        "recall_macro": 0.9465568822365515,
+        "confusion_matrix": [
+          [
+            2006,
+            53
+          ],
+          [
+            34,
+            385
+          ]
+        ]
+      },
+      "test_c_combined": {
+        "n": 9206,
+        "accuracy": 0.878448837714534,
+        "f1_macro": 0.8745794081595192,
+        "precision_macro": 0.8712578181247452,
+        "recall_macro": 0.8797529794064041,
+        "confusion_matrix": [
+          [
+            4852,
+            703
+          ],
+          [
+            416,
+            3235
+          ]
+        ]
+      },
+      "latency_ms_per_sample_test_a": 6.381
+    },
+    "onnx_int8": {
+      "test_a_macd_hindi": {
+        "n": 6728,
+        "accuracy": 0.8437871581450654,
+        "f1_macro": 0.8437781815822294,
+        "precision_macro": 0.84587800929309,
+        "recall_macro": 0.845386240569137,
+        "confusion_matrix": [
+          [
+            2813,
+            683
+          ],
+          [
+            368,
+            2864
+          ]
+        ]
+      },
+      "test_b_davidson_10pct": {
+        "n": 2478,
+        "accuracy": 0.9656981436642453,
+        "f1_macro": 0.9405866528563003,
+        "precision_macro": 0.9294873768472907,
+        "recall_macro": 0.9527454414578989,
+        "confusion_matrix": [
+          [
+            2002,
+            57
+          ],
+          [
+            28,
+            391
+          ]
+        ]
+      },
+      "test_c_combined": {
+        "n": 9206,
+        "accuracy": 0.8768194655659353,
+        "f1_macro": 0.8731777786016945,
+        "precision_macro": 0.8696087918380032,
+        "recall_macro": 0.8793885797782737,
+        "confusion_matrix": [
+          [
+            4816,
+            739
+          ],
+          [
+            395,
+            3256
+          ]
+        ]
+      },
+      "latency_ms_per_sample_test_a": 5.204
+    }
+  },
+  "neurips_baseline": {
+    "name": "MACD paper baseline (XLM-R Large)",
+    "size_mb": 1700.0,
+    "macd_hindi_test_accuracy": null,
+    "macd_hindi_test_f1_macro": null
+  }
+}

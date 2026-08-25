@@ -1,0 +1,8 @@
+{
+  "checkpoint_dir": "/vol/checkpoints/pt",
+  "checkpoint_dir_size_mb": 465.138,
+  "weights_file": "model.safetensors",
+  "weights_file_size_mb": 448.839,
+  "params_total": 117654530,
+  "params_trainable": 117654530
+}

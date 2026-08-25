@@ -23,14 +23,14 @@ env.backends.onnx.wasm.wasmPaths = chrome.runtime.getURL('assets/');
 let classifier = null;
 
 // Toxicity category thresholds and severity mapping
-// The MACD ShareChat model is a binary classifier:
-// Label 0 is usually safe/non-abusive, Label 1 is abusive (or vice versa based on id2label metadata).
-// In our pipeline test, it outputs either "abusive" or "non-abusive" directly.
+// Shipped model id2label (assets/models/custom-macd-model/config.json):
+//   0 -> "abusive", 1 -> "non-abusive" (same as MACD CSV class column).
+// Transformers.js returns those strings; raw keys label_0 / label_1 must stay aligned.
 const TOXICITY_CONFIG = {
     threshold: 0.65, // Confidence threshold for 'High Severity Abuse'
     labels: {
-        abusive: ['abusive', 'label_1'], // Explicit matches for toxic strings
-        safe: ['non-abusive', 'label_0']
+        abusive: ['abusive', 'label_0'],
+        safe: ['non-abusive', 'label_1']
     }
 };
 
@@ -69,9 +69,9 @@ function analyzeToxicity(results) {
         const label = result.label.toLowerCase().trim();
         const score = result.score;
         
-        // BUGFIX: MUST use exact matching because "non-abusive".includes("abusive") is true!
-        const isAbusiveLabel = TOXICITY_CONFIG.labels.abusive.includes(label) || label === 'label_0' /* if 0=abusive */;
-        const isSafeLabel = TOXICITY_CONFIG.labels.safe.includes(label) || label === 'label_1';
+        // BUGFIX: MUST use exact array membership — "non-abusive".includes("abusive") is true!
+        const isAbusiveLabel = TOXICITY_CONFIG.labels.abusive.includes(label);
+        const isSafeLabel = TOXICITY_CONFIG.labels.safe.includes(label);
 
         if (isAbusiveLabel && !isSafeLabel) {
             sumAbusiveScores += score;

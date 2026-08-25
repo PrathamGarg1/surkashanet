@@ -1,0 +1,19 @@
+{
+  "pytorch_fp32": {
+    "weights_file": "model.safetensors",
+    "weights_file_size_mb": 448.839,
+    "checkpoint_dir_size_mb": 465.138
+  },
+  "onnx_fp32": {
+    "onnx_file": "model.onnx",
+    "onnx_file_size_mb": 449.071,
+    "dir_size_mb": 465.365
+  },
+  "onnx_int8": {
+    "onnx_file": "model_quantized.onnx",
+    "onnx_file_size_mb": 112.846,
+    "dir_size_mb": 129.141
+  },
+  "compression_pt_to_int8": 3.977,
+  "compression_onnx_fp32_to_int8": 3.98
+}

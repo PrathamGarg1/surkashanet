@@ -1,3 +1,28 @@
-assets
-dist
-node_modules
+# Build output
+dist/
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Training artifacts not for git
+REPORTS/checkpoints/
+REPORTS/WhatsApp Image*
+*.onnx
+*.onnx_backup
