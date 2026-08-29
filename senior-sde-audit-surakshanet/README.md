@@ -1,25 +1,24 @@
-# SurakshaNet FINAL (minimal)
+# SurakshaNet FINAL (standalone)
 
-Self-contained WhatsApp Web extension. Old `src/` is legacy — use this folder.
+This folder is self-contained. It is **not** nested under the old surakshanet repo.
+
+## Model
+- INT8 `model_quantized.onnx` ~**113 MB** (fetched from Modal `surakshanet-artifacts`)
+- Plus tokenizer/config under `assets/models/custom-macd-model/`
 
 ## Build / load
 ```bash
-cd senior-sde-audit-surakshanet
+cd ~/Desktop/senior-sde-audit-surakshanet   # or this folder
 npm install
 npm run build
-# Chrome → Extensions → Load unpacked → ./dist
+# Chrome → Extensions → Developer mode → Load unpacked → select ./dist
 ```
 
-## Model assets
-Place INT8 package under `assets/models/custom-macd-model/`:
-- `config.json`, `ort_config.json`, `tokenizer.json`, `tokenizer_config.json`, `special_tokens_map.json`
-- `onnx/model_quantized.onnx`
+## Behavior
+- WhatsApp Web only, incoming only
+- Incremental MutationObserver (addedNodes)
+- Flag score > 0.5; high if >= 0.9 else medium
+- Auto local evidence (hash dedupe, cap 200)
+- Popup: export JSON / clear
 
-From notebook/Modal: copy `/vol/checkpoints/onnx_int8/*` (put onnx file under `onnx/model_quantized.onnx`).
-
-## Manual test (WhatsApp Web)
-1. Open a chat; send yourself / receive an abusive-looking Hindi/English line (incoming bubble).
-2. Expect outline + banner (`high` if score≥0.9 else `medium`).
-3. Dismiss → banner gone; same text should stay suppressed this session.
-4. Safe message → no banner, no popup row.
-5. Popup → see incident; Export JSON; Clear.
+See AUDIT.md and MANUAL_TEST.md.
