@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SurakshaNet</title>
+    <style>
+      body {
+        width: 360px;
+        margin: 0;
+        font: 13px/1.4 system-ui, sans-serif;
+        color: #222;
+        background: #fafafa;
+      }
+      header {
+        padding: 12px 14px;
+        border-bottom: 1px solid #e5e5e5;
+        background: #fff;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 650;
+      }
+      header p {
+        margin: 4px 0 0;
+        color: #666;
+        font-size: 11px;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        padding: 10px 14px;
+      }
+      button {
+        font: 12px system-ui;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        background: #fff;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #list {
+        max-height: 420px;
+        overflow: auto;
+        padding: 0 14px 14px;
+      }
+      .row {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 10px;
+        margin-top: 8px;
+      }
+      .meta {
+        color: #666;
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+      .high {
+        color: #c62828;
+        font-weight: 600;
+      }
+      .medium {
+        color: #ef6c00;
+        font-weight: 600;
+      }
+      .empty {
+        color: #888;
+        padding: 24px 14px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>SurakshaNet</h1>
+      <p>On-device incident log. Nothing leaves this browser.</p>
+    </header>
+    <div class="actions">
+      <button id="export">Export JSON</button>
+      <button id="clear">Clear</button>
+    </div>
+    <div id="list"></div>
+    <script type="module" src="./popup.js"></script>
+  </body>
+</html>
