@@ -1,10 +1,11 @@
 # SurakshaNet FINAL (standalone)
 
-This folder is self-contained. It is **not** nested under the old surakshanet repo.
+Self-contained MV3 extension. Prefer this tree (or Desktop/`senior-sde-audit-surakshanet.zip`) over legacy `src/`.
 
 ## Model
-- INT8 `model_quantized.onnx` ~**113 MB** (fetched from Modal `surakshanet-artifacts`)
-- Plus tokenizer/config under `assets/models/custom-macd-model/`
+- Full-vocab INT8 `model_quantized.onnx` ~**113 MB** (Modal `surakshanet-artifacts`)
+- Tokenizer/config under `assets/models/custom-macd-model/`
+- Note: GitHub rejects blobs >100 MB without LFS. If clone is missing the ONNX, copy from Desktop zip or Modal `/vol/checkpoints/onnx_int8*`.
 
 ## Build / load
 ```bash
@@ -16,9 +17,9 @@ npm run build
 
 ## Behavior
 - WhatsApp Web only, incoming only
-- Incremental MutationObserver (addedNodes)
-- Flag score > 0.5; high if >= 0.9 else medium
-- Auto local evidence (hash dedupe, cap 200)
+- Incremental MutationObserver (`addedNodes` on chat pane)
+- Flag `score > 0.5`; severity `high` if `>= 0.9` else `medium`
+- Auto local evidence (SHA-256 id/dedupe, cap 200, no screenshots)
 - Popup: export JSON / clear
 
 See AUDIT.md and MANUAL_TEST.md.

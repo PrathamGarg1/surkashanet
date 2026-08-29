@@ -11,8 +11,9 @@ validation-selected checkpoint:
 | Artifact | MACD hindi_val | MACD hindi_test | Size |
 |---|---|---|---|
 | PyTorch FP32 winner | 84.71% acc / 84.68% macro-F1 | **84.97% acc / 84.94% macro-F1** | ~465 MB checkpoint |
-| ONNX FP32 | ~84.75% val | **84.96% acc / 84.92% macro-F1** | ~326 MB model |
-| Vocab-pruned ONNX INT8 (ship) | **84.53% acc / 84.51% F1** | **84.48% acc / 84.45% macro-F1** | **82.1 MB model / 93.3 MB Chrome artifact** |
+| ONNX FP32 | ~84.75% val | **84.96% acc / 84.92% macro-F1** | ~449 MB model |
+| Full-vocab ONNX INT8 (**ship**) | ~84.5–84.7% | **84.47% acc / 84.43% macro-F1** | **~113 MB weights** |
+| Vocab-pruned ONNX INT8 (optional smaller) | **84.53% val** | **84.48% acc / 84.45% macro-F1** | **~82 MB weights** |
 
 Validation-selected configuration (`experiments/configs/final_winner.json`):
 
@@ -20,7 +21,17 @@ Validation-selected configuration (`experiments/configs/final_winner.json`):
 * weight decay 0, warmup 0, no class weights, no label smoothing
 * train = MACD hindi_train + full Davidson train split
 * val = MACD hindi_val only
-* threshold for the extension: `0.66` (tuned on validation only)
+* Extension product rule: flag if `score > 0.5`; severity `high` if `>= 0.9` else `medium`
+  (scores are near-bimodal ≈0/1, so a 0.66 threshold behaves like 0.5 in practice)
+
+## Ship package
+
+Standalone FINAL extension (not nested under legacy `src/`):
+
+* **`senior-sde-audit-surakshanet/`** (also on Desktop + zip artifact)
+* Incremental `#main` / conversation-pane `addedNodes` observer; incoming only
+* Auto local evidence (SHA-256 id/dedupe, cap 200, `screenshot: null`)
+* Local Transformers.js (`@xenova/transformers` v2) + full-vocab INT8 ONNX
 
 ## Why 88% was not reached
 
@@ -34,19 +45,18 @@ Validation-selected configuration (`experiments/configs/final_winner.json`):
    (ablations, random search, data mixes), best val macro-F1 stayed near
    **85.6%** (older 4.44 stack) / **~85%** (export-compatible 4.36 stack).
    Test tracked validation and did not jump to 88%.
-4. **Compression trade-off.** Vocab pruning (−33.6% tokens) and INT8 keep the
-   Chrome package near **93 MB** with ~0.5 pp test drop vs FP32.
+4. **Compression.** Full-vocab INT8 ships at ~113 MB with ~0.5 pp test drop vs FP32.
+   Vocab pruning is optional if a smaller Chrome package is required.
 
 ## Reproduce
 
 ```bash
 modal profile activate podshorts   # or: modal token set ...
 modal run experiments/exp08_freeze_and_test.py
-modal run experiments/exp07_vocab_prune.py
-modal run experiments/exp06_compress.py --checkpoint-dir /vol/checkpoints/pt_vocab_pruned
+modal run experiments/exp06_compress.py --checkpoint-dir /vol/checkpoints/pt
 modal run training/modal_evaluate.py
-npm ci && npm run build
-node experiments/verify_browser_runtime.mjs
+cd senior-sde-audit-surakshanet && npm ci && npm run build
+# Load unpacked: ./dist
 ```
 
 ## Pipeline updates
@@ -55,9 +65,9 @@ node experiments/verify_browser_runtime.mjs
 * `training/modal_train.py` — delegates to `experiments/_exp_common.run_training`
 * `training/modal_export.py` — staged ONNX FP32/INT8 with backups
 * `training/modal_evaluate.py` — evaluation-only MACD hindi_test access
-* `src/background/service-worker.js` — validation-tuned threshold `0.66`
+* `senior-sde-audit-surakshanet/` — keepable MV3 extension (threshold `> 0.5`)
 
 ## Browser smoke
 
-`node experiments/verify_browser_runtime.mjs` → Transformers.js local load
-passed (`allowRemoteModels=false`).
+Local Transformers.js load of `custom-macd-model` with `allowRemoteModels=false`
+passes against the packaged INT8 assets.
