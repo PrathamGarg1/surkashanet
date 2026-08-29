@@ -5,15 +5,14 @@
 **Approximately 88% MACD Hindi test accuracy was not achieved** with the fixed
 backbone `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
 
-Best honest untouched-test result from the Modal campaign (Transformers 4.36.2
-compatible stack):
+Fresh re-measurement on Modal (`podshorts`, 2026-08-29) of the frozen
+validation-selected checkpoint:
 
 | Artifact | MACD hindi_val | MACD hindi_test | Size |
 |---|---|---|---|
 | PyTorch FP32 winner | 84.71% acc / 84.68% macro-F1 | **84.97% acc / 84.94% macro-F1** | ~465 MB checkpoint |
-| ONNX FP32 | same as PT within noise | ~84.97% | ~449 MB model |
-| ONNX INT8 (full vocab) | ~84.65% | ~84.66% | ~113 MB model / ~129 MB artifact |
-| Vocab-pruned INT8 (ship) | ~84.71% | **84.41% acc / 84.38% macro-F1** | **82.1 MB model / 93.3 MB Chrome artifact** |
+| ONNX FP32 | ~84.75% val | **84.96% acc / 84.92% macro-F1** | ~326 MB model |
+| Vocab-pruned ONNX INT8 (ship) | **84.53% acc / 84.51% F1** | **84.48% acc / 84.45% macro-F1** | **82.1 MB model / 93.3 MB Chrome artifact** |
 
 Validation-selected configuration (`experiments/configs/final_winner.json`):
 
@@ -40,14 +39,13 @@ Validation-selected configuration (`experiments/configs/final_winner.json`):
 
 ## Reproduce
 
-Requires Modal credentials (`MODAL_TOKEN_ID`, `MODAL_TOKEN_SECRET`):
-
 ```bash
+modal profile activate podshorts   # or: modal token set ...
 modal run experiments/exp08_freeze_and_test.py
 modal run experiments/exp07_vocab_prune.py
 modal run experiments/exp06_compress.py --checkpoint-dir /vol/checkpoints/pt_vocab_pruned
 modal run training/modal_evaluate.py
-npm run build
+npm ci && npm run build
 node experiments/verify_browser_runtime.mjs
 ```
 
@@ -58,3 +56,8 @@ node experiments/verify_browser_runtime.mjs
 * `training/modal_export.py` — staged ONNX FP32/INT8 with backups
 * `training/modal_evaluate.py` — evaluation-only MACD hindi_test access
 * `src/background/service-worker.js` — validation-tuned threshold `0.66`
+
+## Browser smoke
+
+`node experiments/verify_browser_runtime.mjs` → Transformers.js local load
+passed (`allowRemoteModels=false`).

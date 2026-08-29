@@ -1,5 +1,5 @@
 {
-  "_name_or_path": "/vol/checkpoints/onnx_fp32",
+  "_name_or_path": "/vol/experiments/compression/frozen_candidate/onnx_fp32",
   "architectures": [
     "BertForSequenceClassification"
   ],
@@ -30,5 +30,5 @@
   "transformers_version": "4.36.2",
   "type_vocab_size": 2,
   "use_cache": true,
-  "vocab_size": 250037
+  "vocab_size": 166100
 }

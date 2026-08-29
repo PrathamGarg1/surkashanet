@@ -28,7 +28,7 @@
     "val_tuned_threshold": {
       "threshold": 0.66,
       "accuracy": 0.8491379310344828,
-      "f1_macro": 0.8490
+      "f1_macro": 0.849
     },
     "macd_test": {
       "accuracy": 0.8497324613555292,
@@ -37,8 +37,9 @@
       "recall_macro": 0.8491911548134219,
       "n": 6728
     },
-    "notes": "Compatible Transformers 4.36.2 retrain of validation-selected h02 search winner. Measured on Modal A10G in prior campaign; re-run with modal token.",
-    "recorded_at": "2026-08-28T19:04:28"
+    "notes": "Frozen validation-selected winner. Fresh Modal A10G hindi_test remeasure 2026-08-29: acc=84.97% f1=84.94%. 88% not achieved.",
+    "recorded_at": "2026-08-28T19:04:28",
+    "remeasured_at": "2026-08-29T04:15:32Z"
   },
   {
     "run_name": "final_winner_int8_pruned",
@@ -62,7 +63,86 @@
       "tokenizer_mb": 11.151,
       "total_mb": 93.258
     },
-    "notes": "Training-only vocab prune (250037→166100) + ONNX dynamic INT8. Browser Transformers.js smoke test passed.",
+    "notes": "Training-only vocab prune (250037\u2192166100) + ONNX dynamic INT8. Browser Transformers.js smoke test passed.",
     "recorded_at": "2026-08-28T20:46:08"
+  },
+  {
+    "run_name": "final_winner_int8",
+    "config": {
+      "model_name": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "run_name": "final_winner_int8"
+    },
+    "val": {
+      "accuracy": 0.8452734839476813,
+      "f1_macro": 0.8450876924654118,
+      "precision_macro": 0.8452254738044468,
+      "recall_macro": 0.844990702689852,
+      "per_class": {
+        "abusive": {
+          "precision": 0.8464398055476122,
+          "recall": 0.8545034642032333,
+          "f1": 0.8504525211894842,
+          "support": 3464
+        },
+        "non-abusive": {
+          "precision": 0.8440111420612814,
+          "recall": 0.8354779411764706,
+          "f1": 0.8397228637413394,
+          "support": 3264
+        }
+      },
+      "confusion_matrix": [
+        [
+          2960,
+          504
+        ],
+        [
+          537,
+          2727
+        ]
+      ],
+      "n": 6728
+    },
+    "macd_test": {
+      "accuracy": 0.8448275862068966,
+      "f1_macro": 0.8444888599712694,
+      "precision_macro": 0.8447753029856677,
+      "recall_macro": 0.8442962395495843,
+      "per_class": {
+        "abusive": {
+          "precision": 0.8457416807670615,
+          "recall": 0.857837528604119,
+          "f1": 0.8517466628798637,
+          "support": 3496
+        },
+        "non-abusive": {
+          "precision": 0.8438089252042741,
+          "recall": 0.8307549504950495,
+          "f1": 0.8372310570626753,
+          "support": 3232
+        }
+      },
+      "confusion_matrix": [
+        [
+          2999,
+          497
+        ],
+        [
+          547,
+          2685
+        ]
+      ],
+      "n": 6728
+    },
+    "sizes": {
+      "model_mb": 82.107,
+      "tokenizer_mb": 11.151,
+      "total_mb": 93.258
+    },
+    "test_reason": "frozen winner selected by MACD hindi_val before export",
+    "notes": "Vocab-pruned ONNX dynamic INT8 re-export 2026-08-29; browser Transformers.js smoke passed; Chrome artifact 93.258 MB.",
+    "experiment": "exp06_compress",
+    "phase": "compression",
+    "recorded_at": "2026-08-29T04:14:49"
   }
 ]
