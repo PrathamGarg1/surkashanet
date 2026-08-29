@@ -74,18 +74,22 @@ DAVIDSON_INDICES_FILE = f"{VOLUME_MOUNT}/davidson_test_indices.json"
 MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 SEED = 42
 DAVIDSON_SEED = 42
-MAX_LENGTH = 128
+MAX_LENGTH = 96
 
-# "Improved" recipe (the one that produced the 1.28%-behind-NeurIPS result)
+# Frozen validation-selected recipe from experiments/configs/final_winner.json.
+# Plain cross-entropy: ablations showed class weights / label smoothing did not
+# improve MACD Hindi validation macro-F1.
 TRAIN_HPARAMS = {
-    "epochs": 7,
-    "lr": 3e-5,
-    "batch_size": 32,
-    "eval_batch_size": 64,
-    "weight_decay": 0.01,
-    "warmup_ratio": 0.1,
-    "lr_scheduler_type": "cosine",
-    "label_smoothing": 0.1,
+    "epochs": 5,
+    "lr": 5e-5,
+    "batch_size": 16,
+    "eval_batch_size": 128,
+    "gradient_accumulation_steps": 1,
+    "weight_decay": 0.0,
+    "warmup_ratio": 0.0,
+    "lr_scheduler_type": "linear",
+    "label_smoothing": 0.0,
+    "class_weights": False,
     "metric_for_best_model": "f1_macro",
 }
 

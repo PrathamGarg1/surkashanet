@@ -27,7 +27,8 @@ let classifier = null;
 //   0 -> "abusive", 1 -> "non-abusive" (same as MACD CSV class column).
 // Transformers.js returns those strings; raw keys label_0 / label_1 must stay aligned.
 const TOXICITY_CONFIG = {
-    threshold: 0.65, // Confidence threshold for 'High Severity Abuse'
+    // Selected once on MACD hindi_val for final_winner; hindi_test was not used.
+    threshold: 0.66,
     labels: {
         abusive: ['abusive', 'label_0'],
         safe: ['non-abusive', 'label_1']

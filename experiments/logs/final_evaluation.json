@@ -1,0 +1,42 @@
+{
+  "run_name": "final_winner",
+  "config": {
+    "run_name": "final_winner",
+    "model_name": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "seed": 42,
+    "data_mix": "macd+davidson",
+    "max_length": 96,
+    "learning_rate": 5e-05,
+    "num_train_epochs": 5,
+    "per_device_train_batch_size": 16,
+    "weight_decay": 0.0,
+    "warmup_ratio": 0.0,
+    "lr_scheduler_type": "linear",
+    "class_weights": false,
+    "label_smoothing": 0.0,
+    "allow_test": true,
+    "test_reason": "configuration frozen after validation-only model selection; no test metrics were available during selection"
+  },
+  "val": {
+    "accuracy": 0.8470570749108205,
+    "f1_macro": 0.8468473010442464,
+    "precision_macro": 0.847079653931476,
+    "recall_macro": 0.8467051153602319,
+    "n": 6728
+  },
+  "val_tuned_threshold": {
+    "threshold": 0.66,
+    "accuracy": 0.8491379310344828,
+    "f1_macro": 0.8490
+  },
+  "macd_test": {
+    "accuracy": 0.8497324613555292,
+    "f1_macro": 0.8493981301433761,
+    "precision_macro": 0.8497111530116588,
+    "recall_macro": 0.8491911548134219,
+    "n": 6728
+  },
+  "saved_to": "/vol/checkpoints/pt",
+  "test_reason": "configuration frozen after validation-only model selection; no test metrics were available during selection",
+  "notes": "Measured on Modal A10G with Transformers 4.36.2 / Optimum 1.16.1 compatible stack."
+}
