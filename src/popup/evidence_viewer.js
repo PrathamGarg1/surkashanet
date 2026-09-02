@@ -1,103 +1,245 @@
 /**
- * Evidence Viewer - Popup UI Logic
- * Manages evidence display, statistics, and export functionality
+ * Evidence Viewer & Parental Session Controller for SurakshaNet Popup
+ * Manages view state transitions: Unconfigured -> Child Protection (Locked) -> Parent Dashboard (Unlocked)
  */
 
-import { getAllEvidence, getStorageStats, exportToJSON, downloadFile, clearAllEvidence } from '../utils/storage_manager.js';
+import {
+    isAccountSetup,
+    isParentSessionActive,
+    loginParent,
+    lockSession,
+    logoutParent
+} from '../utils/auth_manager.js';
+
+import {
+    getAllEvidence,
+    getStorageStats,
+    exportToJSON,
+    downloadFile,
+    clearAllEvidence
+} from '../utils/storage_manager.js';
+
 import { exportToPDF } from '../utils/pdf_exporter.js';
 
 // DOM Elements
+let viewUnconfigured, viewChildLocked, viewParentDashboard;
+let btnLaunchSetup, unlockForm, popupPassword, btnUnlockPopup, unlockError;
+let headerActions, footerLinks, btnLogoutReset;
 let totalIncidentsEl, highSeverityEl, mediumSeverityEl;
 let evidenceListEl, emptyStateEl, loadingEl;
 let exportPDFBtn, exportJSONBtn, clearAllBtn;
 
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', async () => {
-    // Get DOM elements
+    cacheDomElements();
+    setupGlobalEventListeners();
+    await updateViewState();
+});
+
+function cacheDomElements() {
+    viewUnconfigured = document.getElementById('viewUnconfigured');
+    viewChildLocked = document.getElementById('viewChildLocked');
+    viewParentDashboard = document.getElementById('viewParentDashboard');
+
+    btnLaunchSetup = document.getElementById('btnLaunchSetup');
+    unlockForm = document.getElementById('unlockForm');
+    popupPassword = document.getElementById('popupPassword');
+    btnUnlockPopup = document.getElementById('btnUnlockPopup');
+    unlockError = document.getElementById('unlockError');
+
+    headerActions = document.getElementById('headerActions');
+    footerLinks = document.getElementById('footerLinks');
+    btnLogoutReset = document.getElementById('btnLogoutReset');
+
     totalIncidentsEl = document.getElementById('totalIncidents');
     highSeverityEl = document.getElementById('highSeverity');
     mediumSeverityEl = document.getElementById('mediumSeverity');
     evidenceListEl = document.getElementById('evidenceList');
     emptyStateEl = document.getElementById('emptyState');
     loadingEl = document.getElementById('loading');
+
     exportPDFBtn = document.getElementById('exportPDF');
     exportJSONBtn = document.getElementById('exportJSON');
     clearAllBtn = document.getElementById('clearAll');
+}
 
-    // Set up event listeners
-    exportPDFBtn.addEventListener('click', handleExportPDF);
-    exportJSONBtn.addEventListener('click', handleExportJSON);
-    clearAllBtn.addEventListener('click', handleClearAll);
+function setupGlobalEventListeners() {
+    if (btnLaunchSetup) {
+        btnLaunchSetup.addEventListener('click', () => {
+            const url = chrome.runtime.getURL('src/auth/auth.html');
+            chrome.tabs.create({ url });
+        });
+    }
 
-    // Load evidence
-    await loadEvidence();
-});
+    if (unlockForm) {
+        unlockForm.addEventListener('submit', handleUnlockSubmit);
+    }
 
-/**
- * Load and display evidence
- */
+    if (exportPDFBtn) exportPDFBtn.addEventListener('click', handleExportPDF);
+    if (exportJSONBtn) exportJSONBtn.addEventListener('click', handleExportJSON);
+    if (clearAllBtn) clearAllBtn.addEventListener('click', handleClearAll);
+
+    if (btnLogoutReset) {
+        btnLogoutReset.addEventListener('click', handleLogoutReset);
+    }
+}
+
+// ─── VIEW STATE ORCHESTRATION ───────────────────────────────────────────────
+
+async function updateViewState() {
+    const configured = await isAccountSetup();
+    if (!configured) {
+        showView('unconfigured');
+        return;
+    }
+
+    const sessionActive = await isParentSessionActive();
+    if (sessionActive) {
+        showView('parentDashboard');
+        await loadEvidence();
+    } else {
+        showView('childLocked');
+    }
+}
+
+function showView(viewName) {
+    viewUnconfigured.style.display = 'none';
+    viewChildLocked.style.display = 'none';
+    viewParentDashboard.style.display = 'none';
+    headerActions.innerHTML = '';
+    if (btnLogoutReset) btnLogoutReset.style.display = 'none';
+
+    if (viewName === 'unconfigured') {
+        viewUnconfigured.style.display = 'flex';
+    } else if (viewName === 'childLocked') {
+        viewChildLocked.style.display = 'flex';
+        if (unlockError) unlockError.style.display = 'none';
+        if (popupPassword) {
+            popupPassword.value = '';
+            popupPassword.focus();
+        }
+    } else if (viewName === 'parentDashboard') {
+        viewParentDashboard.style.display = 'flex';
+        if (btnLogoutReset) btnLogoutReset.style.display = 'inline-block';
+
+        // Add "Lock Session" pill button to header
+        const lockBtn = document.createElement('button');
+        lockBtn.className = 'btn-pill lock-btn';
+        lockBtn.innerHTML = '🔒 Lock Session';
+        lockBtn.addEventListener('click', async () => {
+            await lockSession();
+            await updateViewState();
+        });
+        headerActions.appendChild(lockBtn);
+    }
+}
+
+// ─── UNLOCK HANDLER ─────────────────────────────────────────────────────────
+
+async function handleUnlockSubmit(e) {
+    e.preventDefault();
+    if (unlockError) unlockError.style.display = 'none';
+
+    const password = popupPassword.value;
+    if (!password) return;
+
+    btnUnlockPopup.disabled = true;
+    btnUnlockPopup.textContent = 'Verifying...';
+
+    try {
+        const success = await loginParent(password);
+        if (success) {
+            await updateViewState();
+        } else {
+            if (unlockError) {
+                unlockError.textContent = 'Incorrect master password. Access denied.';
+                unlockError.style.display = 'block';
+            }
+            popupPassword.value = '';
+            popupPassword.focus();
+        }
+    } catch (err) {
+        console.error('Unlock error:', err);
+        if (unlockError) {
+            unlockError.textContent = 'Error verifying password: ' + err.message;
+            unlockError.style.display = 'block';
+        }
+    } finally {
+        btnUnlockPopup.disabled = false;
+        btnUnlockPopup.textContent = 'Unlock';
+    }
+}
+
+// ─── LOGOUT HANDLER ─────────────────────────────────────────────────────────
+
+async function handleLogoutReset(e) {
+    e.preventDefault();
+    const confirmPassword = prompt(
+        '⚠️ Confirm Logout: Logging out will deactivate the current configuration and require parent setup on next use.\n\nEnter your Master Parent Password to confirm:'
+    );
+
+    if (!confirmPassword) return;
+
+    try {
+        await logoutParent(confirmPassword);
+        alert('You have successfully logged out of SurakshaNet.');
+        await updateViewState();
+    } catch (error) {
+        alert('Failed to log out: ' + error.message);
+    }
+}
+
+// ─── EVIDENCE VIEWER DATA & ACTIONS ─────────────────────────────────────────
+
 async function loadEvidence() {
     try {
-        loadingEl.style.display = 'block';
-        evidenceListEl.innerHTML = '';
-        emptyStateEl.style.display = 'none';
+        if (loadingEl) loadingEl.style.display = 'block';
+        if (evidenceListEl) evidenceListEl.innerHTML = '';
+        if (emptyStateEl) emptyStateEl.style.display = 'none';
 
-        // Get evidence and stats
         const evidence = await getAllEvidence();
         const stats = await getStorageStats();
 
-        // Update statistics
         updateStats(stats);
 
-        // Display evidence
         if (evidence.length === 0) {
-            emptyStateEl.style.display = 'block';
+            if (emptyStateEl) emptyStateEl.style.display = 'block';
         } else {
             displayEvidence(evidence);
         }
 
-        loadingEl.style.display = 'none';
+        if (loadingEl) loadingEl.style.display = 'none';
     } catch (error) {
         console.error('Failed to load evidence:', error);
-        loadingEl.style.display = 'none';
-        evidenceListEl.innerHTML = '<p style="color: red; text-align: center;">Failed to load evidence</p>';
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (evidenceListEl) {
+            evidenceListEl.innerHTML = '<p style="color: #ef4444; text-align: center; font-size: 11px;">Failed to load evidence</p>';
+        }
     }
 }
 
-/**
- * Update statistics display
- */
 function updateStats(stats) {
-    totalIncidentsEl.textContent = stats.totalIncidents;
-    highSeverityEl.textContent = stats.severityCounts.HIGH;
-    mediumSeverityEl.textContent = stats.severityCounts.MEDIUM;
+    if (totalIncidentsEl) totalIncidentsEl.textContent = stats.totalIncidents;
+    if (highSeverityEl) highSeverityEl.textContent = stats.severityCounts.HIGH;
+    if (mediumSeverityEl) mediumSeverityEl.textContent = stats.severityCounts.MEDIUM;
 }
 
-/**
- * Display evidence list
- */
 function displayEvidence(evidenceList) {
-    // Sort by timestamp (newest first)
     const sorted = [...evidenceList].sort((a, b) =>
         new Date(b.timestamp) - new Date(a.timestamp)
     );
 
     evidenceListEl.innerHTML = '';
-
     sorted.forEach(evidence => {
         const item = createEvidenceItem(evidence);
         evidenceListEl.appendChild(item);
     });
 }
 
-/**
- * Create evidence item element
- */
 function createEvidenceItem(evidence) {
     const div = document.createElement('div');
     div.className = 'evidence-item';
 
-    // Header with severity badge
     const header = document.createElement('div');
     header.className = 'evidence-header';
 
@@ -106,24 +248,23 @@ function createEvidenceItem(evidence) {
     timestamp.textContent = formatTimestamp(evidence.timestamp);
 
     const severityBadge = document.createElement('span');
-    severityBadge.className = `severity-badge ${evidence.severity}`;
-    severityBadge.textContent = evidence.severity;
+    severityBadge.className = `severity-badge ${evidence.severity || 'UNKNOWN'}`;
+    severityBadge.textContent = evidence.severity || 'UNKNOWN';
 
     header.appendChild(timestamp);
     header.appendChild(severityBadge);
 
-    // Metadata
     const meta = document.createElement('div');
     meta.className = 'evidence-meta';
+    meta.style.marginBottom = '6px';
     meta.innerHTML = `
-        <strong>Source:</strong> ${evidence.source} | 
+        <strong>Source:</strong> ${evidence.source || 'Unknown'} | 
         <strong>Score:</strong> ${(evidence.maxScore * 100).toFixed(1)}%
-        ${evidence.screenshot ? ' | 📸 Screenshot' : ''}
+        ${evidence.screenshot ? ' | 📸 Visual Evidence' : ''}
     `;
 
-    // Categories
     const categoriesDiv = document.createElement('div');
-    categoriesDiv.className = 'evidence-categories';
+    categoriesDiv.className = 'category-tags';
 
     if (evidence.categories && evidence.categories.length > 0) {
         evidence.categories.forEach(cat => {
@@ -134,24 +275,22 @@ function createEvidenceItem(evidence) {
         });
     }
 
-    // Text content
     const textDiv = document.createElement('div');
     textDiv.className = 'evidence-text';
-    textDiv.textContent = evidence.text;
+    textDiv.textContent = evidence.text || 'No text captured';
 
-    // Assemble
     div.appendChild(header);
     div.appendChild(meta);
-    div.appendChild(categoriesDiv);
+    if (evidence.categories && evidence.categories.length > 0) {
+        div.appendChild(categoriesDiv);
+    }
     div.appendChild(textDiv);
 
     return div;
 }
 
-/**
- * Format timestamp for display
- */
 function formatTimestamp(timestamp) {
+    if (!timestamp) return 'N/A';
     const date = new Date(timestamp);
     return date.toLocaleString('en-IN', {
         timeZone: 'Asia/Kolkata',
@@ -160,23 +299,18 @@ function formatTimestamp(timestamp) {
     });
 }
 
-/**
- * Handle PDF export
- */
 async function handleExportPDF() {
     try {
         exportPDFBtn.disabled = true;
-        exportPDFBtn.textContent = '⏳ Generating...';
+        exportPDFBtn.textContent = '⏳ Exporting...';
 
         const evidence = await getAllEvidence();
-
         if (evidence.length === 0) {
-            alert('No evidence to export');
+            alert('No evidence records to export.');
             return;
         }
 
         exportToPDF(evidence);
-
         exportPDFBtn.textContent = '✅ Exported!';
         setTimeout(() => {
             exportPDFBtn.textContent = '📄 Export PDF';
@@ -190,9 +324,6 @@ async function handleExportPDF() {
     }
 }
 
-/**
- * Handle JSON export
- */
 async function handleExportJSON() {
     try {
         exportJSONBtn.disabled = true;
@@ -215,34 +346,28 @@ async function handleExportJSON() {
     }
 }
 
-/**
- * Handle clear all evidence
- */
 async function handleClearAll() {
     const confirmed = confirm(
-        '⚠️ WARNING: This will permanently delete ALL evidence.\n\n' +
-        'Are you sure you want to continue?\n\n' +
-        'Tip: Export evidence to PDF/JSON before clearing.'
+        '⚠️ WARNING: This will permanently delete ALL logged evidence records.\n\nAre you sure you want to continue?'
     );
-
     if (!confirmed) return;
 
     try {
         clearAllBtn.disabled = true;
-        clearAllBtn.textContent = '⏳ Clearing...';
+        clearAllBtn.textContent = 'Clearing...';
 
         await clearAllEvidence();
         await loadEvidence();
 
         clearAllBtn.textContent = '✅ Cleared!';
         setTimeout(() => {
-            clearAllBtn.textContent = '🗑️ Clear All';
+            clearAllBtn.textContent = '🗑️ Clear';
             clearAllBtn.disabled = false;
         }, 2000);
     } catch (error) {
         console.error('Failed to clear evidence:', error);
         alert('Failed to clear evidence: ' + error.message);
-        clearAllBtn.textContent = '🗑️ Clear All';
+        clearAllBtn.textContent = '🗑️ Clear';
         clearAllBtn.disabled = false;
     }
 }

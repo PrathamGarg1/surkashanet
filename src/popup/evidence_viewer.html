@@ -3,236 +3,481 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SurakshaNet - Evidence Manager</title>
+    <title>SurakshaNet - Parental Evidence Manager</title>
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-light: rgba(99, 102, 241, 0.12);
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            width: 450px;
-            min-height: 500px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            width: 440px;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            overflow-x: hidden;
         }
 
-        .header {
-            background: white;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
-        .logo {
+        /* ─── APP HEADER ─────────────────────────────────────────────────── */
+        .app-header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-group {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 10px;
         }
 
         .logo-icon {
-            font-size: 32px;
+            font-size: 26px;
+            filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.4));
         }
 
         .logo-text h1 {
-            font-size: 20px;
-            color: #667eea;
-            margin-bottom: 2px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.2px;
         }
 
         .logo-text p {
-            font-size: 11px;
-            color: #666;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
             font-size: 10px;
-            color: #666;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        .severity-HIGH { color: #d32f2f; }
-        .severity-MEDIUM { color: #f57c00; }
-        .severity-LOW { color: #fbc02d; }
-
-        .actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-pill {
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            color: #cbd5e1;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-pill:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        .btn-pill.lock-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .btn-pill.lock-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #ffffff;
+        }
+
+        /* ─── VIEWS CONTAINER ────────────────────────────────────────────── */
+        .view-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 18px 20px;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── VIEW 1: UNCONFIGURED ───────────────────────────────────────── */
+        .unconfigured-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px dashed rgba(99, 102, 241, 0.4);
+            border-radius: 14px;
+            padding: 28px 20px;
+            text-align: center;
+        }
+
+        .unconfigured-icon {
+            font-size: 42px;
+            margin-bottom: 12px;
+        }
+
+        .unconfigured-card h2 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .unconfigured-card p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        /* ─── VIEW 2: CHILD PROTECTION (LOCKED) ─────────────────────────── */
+        .status-hero {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: #34d399;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+
+        .status-hero h2 {
+            font-size: 15px;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .status-hero p {
+            font-size: 11px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        .channels-grid {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .channel-chip {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 10px;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .parent-unlock-box {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .parent-unlock-box h3 {
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pwd-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+        }
+
+        .btn-unlock {
+            padding: 10px 16px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-unlock:hover {
+            background: var(--primary-hover);
+        }
+
+        .unlock-error {
+            font-size: 11px;
+            color: var(--danger);
+            margin-top: 6px;
+            display: none;
+        }
+
+        /* ─── VIEW 3: PARENT DASHBOARD (UNLOCKED) ────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value.HIGH { color: #f87171; }
+        .stat-value.MEDIUM { color: #fb923c; }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
         .btn-primary {
-            background: #667eea;
+            background: var(--primary);
             color: white;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+            background: var(--primary-hover);
         }
 
         .btn-secondary {
-            background: #f5f7fa;
-            color: #667eea;
-            border: 1px solid #667eea;
+            background: rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .btn-secondary:hover {
-            background: #667eea;
+            background: rgba(255, 255, 255, 0.15);
             color: white;
         }
 
         .btn-danger {
-            background: #d32f2f;
-            color: white;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
         }
 
         .btn-danger:hover {
-            background: #b71c1c;
+            background: var(--danger);
+            color: white;
         }
 
-        .content {
-            background: white;
-            margin: 10px;
+        .evidence-container {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 15px;
-            max-height: 350px;
+            padding: 12px;
+            max-height: 220px;
             overflow-y: auto;
         }
 
         .evidence-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .evidence-item {
-            border: 1px solid #e0e0e0;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 8px;
-            padding: 12px;
+            padding: 10px;
             transition: all 0.2s;
         }
 
         .evidence-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary);
         }
 
         .evidence-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .severity-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .severity-badge.HIGH { background: #d32f2f; }
-        .severity-badge.MEDIUM { background: #f57c00; }
-        .severity-badge.LOW { background: #fbc02d; }
-        .severity-badge.UNKNOWN { background: #9e9e9e; }
-
-        .evidence-meta {
-            font-size: 11px;
-            color: #666;
             margin-bottom: 6px;
         }
 
-        .evidence-categories {
+        .evidence-meta {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .severity-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .severity-badge.HIGH { background: #dc2626; }
+        .severity-badge.MEDIUM { background: #ea580c; }
+        .severity-badge.LOW { background: #ca8a04; }
+        .severity-badge.UNKNOWN { background: #64748b; }
+
+        .category-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .category-tag {
-            background: #f5f7fa;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            color: #667eea;
-            border: 1px solid #667eea;
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 9px;
         }
 
         .evidence-text {
-            font-size: 12px;
-            color: #333;
-            background: #f9f9f9;
-            padding: 8px;
+            font-size: 11px;
+            color: #e2e8f0;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 6px 8px;
             border-radius: 4px;
-            border-left: 3px solid #667eea;
-            max-height: 60px;
+            border-left: 2px solid var(--primary);
+            max-height: 48px;
             overflow-y: auto;
         }
 
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
-            color: #999;
+            padding: 28px 10px;
+            color: var(--text-muted);
+            font-size: 11px;
         }
 
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
+        .empty-icon {
+            font-size: 32px;
+            margin-bottom: 6px;
         }
 
-        .loading {
+        .loading-state {
             text-align: center;
             padding: 20px;
-            color: #667eea;
+            color: var(--primary);
+            font-size: 12px;
         }
 
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top: 2px solid var(--primary);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 8px;
         }
 
         @keyframes spin {
@@ -240,87 +485,154 @@
             100% { transform: rotate(360deg); }
         }
 
-        .footer {
-            background: white;
+        /* ─── FOOTER ─────────────────────────────────────────────────────── */
+        .app-footer {
+            margin-top: auto;
             padding: 12px 20px;
-            margin: 10px;
-            border-radius: 8px;
-            text-align: center;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-size: 10px;
-            color: #999;
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.9);
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
+        .footer-link:hover {
+            color: #ffffff;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 10px;
+        .footer-link.danger-link:hover {
+            color: var(--danger);
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #5568d3;
-        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">
-            <div class="logo-icon">🛡️</div>
+    <!-- ─── HEADER ───────────────────────────────────────────────────────── -->
+    <header class="app-header">
+        <div class="logo-group">
+            <span class="logo-icon">🛡️</span>
             <div class="logo-text">
                 <h1>SurakshaNet</h1>
-                <p>Ministry-Grade Evidence Management</p>
+                <p>Parental Evidence Shield</p>
             </div>
         </div>
+        <div class="header-actions" id="headerActions">
+            <!-- Dynamically populated (e.g. Lock Session button) -->
+        </div>
+    </header>
 
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value" id="totalIncidents">0</div>
-                <div class="stat-label">Total</div>
+    <!-- ─── MAIN CONTENT WRAPPER ─────────────────────────────────────────── -->
+    <main class="main-content">
+        <!-- ─── VIEW 1: UNCONFIGURED / SETUP REQUIRED ────────────────────────── -->
+        <section id="viewUnconfigured" class="view-section" style="display: none;">
+            <div class="unconfigured-card">
+                <div class="unconfigured-icon">⚙️</div>
+                <h2>Setup Required</h2>
+                <p>
+                    SurakshaNet must be configured by a parent or guardian before monitoring can be managed. Set up your master password to get started.
+                </p>
+                <button id="btnLaunchSetup" class="btn-action btn-primary" style="width: 100%; padding: 12px;">
+                    🚀 Launch Parent Setup
+                </button>
             </div>
-            <div class="stat-card">
-                <div class="stat-value severity-HIGH" id="highSeverity">0</div>
-                <div class="stat-label">High</div>
+        </section>
+
+        <!-- ─── VIEW 2: CHILD PROTECTION MODE (DEFAULT / LOCKED) ─────────────── -->
+        <section id="viewChildLocked" class="view-section" style="display: none;">
+            <div class="status-hero">
+                <div class="status-badge">
+                    <span class="pulse-dot"></span>
+                    Active Protection
+                </div>
+                <h2>Monitoring is Enabled</h2>
+                <p>
+                    SurakshaNet is actively analyzing messages on supported platforms to protect against toxic and abusive content.
+                </p>
+                <div class="channels-grid">
+                    <span class="channel-chip">💬 WhatsApp</span>
+                    <span class="channel-chip">🐦 Twitter / X</span>
+                    <span class="channel-chip">📸 Instagram</span>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value severity-MEDIUM" id="mediumSeverity">0</div>
-                <div class="stat-label">Medium</div>
+
+            <div class="parent-unlock-box">
+                <h3><span>🔑</span> Parent Portal Unlock</h3>
+                <form id="unlockForm">
+                    <div class="pwd-input-group">
+                        <input type="password" id="popupPassword" class="form-input" placeholder="Enter master password" required>
+                        <button type="submit" id="btnUnlockPopup" class="btn-unlock">Unlock</button>
+                    </div>
+                    <div id="unlockError" class="unlock-error">Incorrect password. Please try again.</div>
+                </form>
+                <p style="font-size: 10px; color: #64748b; margin-top: 8px; line-height: 1.4;">
+                    🔒 Evidence logs and settings can only be viewed or modified with the master parent password.
+                </p>
             </div>
+        </section>
+
+        <!-- ─── VIEW 3: PARENT DASHBOARD (UNLOCKED) ───────────────────────────── -->
+        <section id="viewParentDashboard" class="view-section" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalIncidents">0</div>
+                    <div class="stat-label">Total Logs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value HIGH" id="highSeverity">0</div>
+                    <div class="stat-label">High Severity</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value MEDIUM" id="mediumSeverity">0</div>
+                    <div class="stat-label">Medium</div>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn-action btn-primary" id="exportPDF">📄 Export PDF</button>
+                <button class="btn-action btn-secondary" id="exportJSON">💾 Export JSON</button>
+                <button class="btn-action btn-danger" id="clearAll">🗑️ Clear</button>
+            </div>
+
+            <div class="evidence-container">
+                <div id="loading" class="loading-state" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading evidence logs...</p>
+                </div>
+
+                <div id="evidenceList" class="evidence-list"></div>
+
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-icon">📭</div>
+                    <p><strong>No Incidents Logged Yet</strong></p>
+                    <p style="font-size: 10px; color: #64748b; margin-top: 4px;">
+                        When abusive messages are detected, evidence records will appear here.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ─── FOOTER ───────────────────────────────────────────────────────── -->
+    <footer class="app-footer">
+        <span>SurakshaNet • On-Device AI</span>
+        <div id="footerLinks">
+            <a href="#" id="btnLogoutReset" class="footer-link danger-link" style="display: none;">Log Out</a>
         </div>
-
-        <div class="actions">
-            <button class="btn btn-primary" id="exportPDF">📄 Export PDF</button>
-            <button class="btn btn-secondary" id="exportJSON">💾 Export JSON</button>
-            <button class="btn btn-danger" id="clearAll">🗑️ Clear All</button>
-        </div>
-    </div>
-
-    <div class="content">
-        <div id="loading" class="loading" style="display: none;">
-            <div class="spinner"></div>
-            <p>Loading evidence...</p>
-        </div>
-
-        <div id="evidenceList" class="evidence-list"></div>
-
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <div class="empty-state-icon">📭</div>
-            <p><strong>No Evidence Collected</strong></p>
-            <p style="font-size: 12px; margin-top: 8px;">
-                Toxic content will be automatically detected and logged here.
-            </p>
-        </div>
-    </div>
-
-    <div class="footer">
-        Powered by Xenova/toxic-bert • Privacy-First • Court-Admissible Evidence
-    </div>
+    </footer>
 
     <script type="module" src="./evidence_viewer.js"></script>
 </body>
