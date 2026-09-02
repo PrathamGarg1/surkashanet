@@ -21,6 +21,7 @@
     "default_popup": "src/popup/evidence_viewer.html",
     "default_title": "SurakshaNet Evidence Manager"
   },
+  "options_page": "src/auth/auth.html",
   "background": {
     "service_worker": "src/background/service-worker.js",
     "type": "module"

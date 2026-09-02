@@ -93,11 +93,23 @@ function analyzeToxicity(results) {
 }
 
 // Initialize on install/startup
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async (details) => {
     console.log('🛡️ SurakshaNet extension installed. Initializing model...');
     initializeModel().catch(err => {
         console.error('Failed to initialize model on install:', err);
     });
+
+    // Check if parent account is configured; if not, open setup wizard in a new tab
+    try {
+        const { isAccountSetup } = await import('../utils/auth_manager.js');
+        const configured = await isAccountSetup();
+        if (!configured) {
+            console.log('⚙️ SurakshaNet: First-time setup required. Launching setup wizard...');
+            chrome.tabs.create({ url: chrome.runtime.getURL('src/auth/auth.html') });
+        }
+    } catch (err) {
+        console.warn('⚠️ Could not verify auth setup on install:', err);
+    }
 });
 
 // Also initialize on startup
