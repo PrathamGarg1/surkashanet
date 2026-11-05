@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use SurakshaNet, please cite the MobiSys Companion '26 poster."
+title: "SurakshaNet: Privacy-First, Edge-Deployed Multilingual Abusive Language Detection"
+authors:
+  - family-names: Jain
+    given-names: Aamod
+  - family-names: Garg
+    given-names: Pratham
+  - family-names: Yadav
+    given-names: Geeta
+repository-code: "https://github.com/PrathamGarg1/surkashanet"
+doi: "10.1145/3812835.3814864"
+year: 2026

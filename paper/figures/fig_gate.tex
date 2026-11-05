@@ -1,0 +1,16 @@
+% Gated conversational window used by the extension (sw.js / narrative_cache.js)
+\begin{tikzpicture}[node distance=5mm and 4mm]
+  \node[blk=gray!12, text width=1.9cm] (n) {\textbf{New message}\\+ last $\le$8 turns\\of the chat};
+  \node[blk=blue!8, text width=1.9cm, right=of n] (c) {\textbf{Score the}\\\textbf{current message}};
+  \node[blk=yellow!18, text width=2.0cm, below=of c] (g) {\textbf{Gate:} history exists and new turn $<$8 tokens?};
+  \node[blk=blue!8, text width=1.9cm, right=of g] (w) {\textbf{Score the}\\\textbf{window}\\($\le$96 tokens)};
+  \node[blk=orange!14, text width=1.9cm, right=of c] (m) {\textbf{score =}\\$\max$(message, window)};
+  \node[blk=green!10, text width=1.7cm, right=of m] (f) {\textbf{flag if}\\score $>$ 0.5};
+  \draw[arr] (n) -- (c);
+  \draw[arr] (n.south) |- (g.west);
+  \draw[arr] (g) -- node[above, font=\fontsize{6}{7}\selectfont]{yes} (w);
+  \draw[arr] (c) -- (m);
+  \draw[arr] (w.north) -- (w.north |- m.south);
+  \draw[arr] (m) -- (f);
+  \node[font=\fontsize{6}{7}\selectfont, below=1mm of g] {no: current message only};
+\end{tikzpicture}

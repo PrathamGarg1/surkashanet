@@ -1,28 +1,41 @@
-# Build output
+# Build output and dependencies
 dist/
-
-# Node
 node_modules/
+
+# Model weights and large local artifacts (regenerate with the training / export scripts)
+*.onnx
+*.onnx_backup
+*.wasm
+**/assets/models/**/onnx/
+**/assets/models/**/*.safetensors
+thread_benchmark/artifacts/
+thread_benchmark/artifacts_v2/
+thread_benchmark/dataset/all/
+thread_benchmark/dataset/_cache/
+thread_benchmark/gru/cache/
+thread_benchmark/quant/onnx/
 
 # Python
 __pycache__/
 *.pyc
-*.pyo
 *.egg-info/
 .venv/
 venv/
+.venv_codemix/
 
-# OS
+# Secrets, local environment, OS and editor files
+*.env
 .DS_Store
 Thumbs.db
-
-# IDE
+._*
+*.pid
 .vscode/
 .idea/
-.claude/
 
-# Training artifacts not for git
-REPORTS/checkpoints/
-REPORTS/WhatsApp Image*
-*.onnx
-*.onnx_backup
+# LaTeX build files
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/main.pdf
