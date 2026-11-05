@@ -39,3 +39,7 @@ paper/*.blg
 paper/*.log
 paper/*.out
 paper/main.pdf
+
+# Local models and API call log (kept on disk, not in git)
+extension_v2/assets/models/
+thread_benchmark/logs/bedrock_calls.jsonl
